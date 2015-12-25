@@ -1,5 +1,5 @@
 # karolekStore
-Simple librabry to use mysql or sqlite in java
+Simple library to use mysql or sqlite in java
 
 Usage:
 ```java
