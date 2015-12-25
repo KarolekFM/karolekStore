@@ -1,4 +1,4 @@
-package net.karolek.store.queries.tables;
+package net.karolek.store.tables;
 
 public interface StoreTable {
 

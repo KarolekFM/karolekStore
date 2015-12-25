@@ -2,10 +2,10 @@ package net.karolek.store.queries.impl;
 
 import lombok.Getter;
 import net.karolek.store.Store;
+import net.karolek.store.common.QueryCallback;
 import net.karolek.store.queries.StoreQuery;
-import net.karolek.store.queries.tables.StoreTable;
-import net.karolek.store.queries.tables.StoreTableImpl;
-import net.karolek.store.runner.QueryCallback;
+import net.karolek.store.tables.StoreTable;
+import net.karolek.store.tables.StoreTableImpl;
 
 @Getter
 public abstract class StoreQueryImpl<T extends StoreQuery> implements StoreQuery<T> {

@@ -2,12 +2,12 @@ package net.karolek.store;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.karolek.store.common.PreparedQuery;
+import net.karolek.store.common.TaskProvider;
+import net.karolek.store.common.runner.QueryRunner;
 import net.karolek.store.modes.StoreMode;
 import net.karolek.store.modes.StoreMysql;
 import net.karolek.store.modes.StoreSqlite;
-import net.karolek.store.runner.PreparedQuery;
-import net.karolek.store.runner.QueryRunner;
-import net.karolek.store.runner.TaskProvider;
 
 import java.sql.Connection;
 

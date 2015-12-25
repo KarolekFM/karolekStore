@@ -1,4 +1,4 @@
-package net.karolek.store.runner;
+package net.karolek.store.common;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

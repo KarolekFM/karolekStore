@@ -1,7 +1,7 @@
-package net.karolek.store.queries.where;
+package net.karolek.store.queries.interfaces;
 
+import net.karolek.store.columns.StoreColumn;
 import net.karolek.store.queries.StoreQuery;
-import net.karolek.store.queries.columns.StoreColumn;
 
 public interface QualifedWhereQuery<T extends StoreQuery> {
 

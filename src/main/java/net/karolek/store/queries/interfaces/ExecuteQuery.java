@@ -1,4 +1,4 @@
-package net.karolek.store.queries;
+package net.karolek.store.queries.interfaces;
 
 import net.karolek.store.Store;
 

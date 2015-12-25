@@ -1,7 +1,8 @@
-package net.karolek.store.runner;
+package net.karolek.store.common;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.karolek.store.common.runner.QueryExecutor;
 
 @Getter
 @Setter

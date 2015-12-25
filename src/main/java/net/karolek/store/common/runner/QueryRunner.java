@@ -1,8 +1,9 @@
-package net.karolek.store.runner;
+package net.karolek.store.common.runner;
 
 import lombok.Getter;
 import lombok.Setter;
 import net.karolek.store.Store;
+import net.karolek.store.common.PreparedQuery;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

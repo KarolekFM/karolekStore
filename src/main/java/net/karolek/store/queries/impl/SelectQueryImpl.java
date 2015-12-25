@@ -2,16 +2,16 @@ package net.karolek.store.queries.impl;
 
 import lombok.Getter;
 import net.karolek.store.Store;
+import net.karolek.store.columns.StoreAllColumnsImpl;
+import net.karolek.store.columns.StoreColumn;
+import net.karolek.store.columns.StoreColumnImpl;
+import net.karolek.store.common.PreparedQuery;
+import net.karolek.store.common.runner.QueryExecutor;
 import net.karolek.store.condition.Condition;
 import net.karolek.store.condition.ConditionBuilder;
 import net.karolek.store.queries.SelectQuery;
-import net.karolek.store.queries.columns.StoreAllColumnsImpl;
-import net.karolek.store.queries.columns.StoreColumn;
-import net.karolek.store.queries.columns.StoreColumnImpl;
-import net.karolek.store.queries.where.ColumnWhereQuery;
-import net.karolek.store.queries.where.QualifedWhereQuery;
-import net.karolek.store.runner.PreparedQuery;
-import net.karolek.store.runner.QueryExecutor;
+import net.karolek.store.queries.interfaces.ColumnWhereQuery;
+import net.karolek.store.queries.interfaces.QualifedWhereQuery;
 
 import java.util.*;
 

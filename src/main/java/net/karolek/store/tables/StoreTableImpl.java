@@ -1,4 +1,4 @@
-package net.karolek.store.queries.tables;
+package net.karolek.store.tables;
 
 import lombok.Getter;
 import lombok.Setter;

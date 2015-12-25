@@ -1,4 +1,4 @@
-package net.karolek.store.queries.where;
+package net.karolek.store.queries.interfaces;
 
 import net.karolek.store.queries.StoreQuery;
 

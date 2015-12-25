@@ -2,7 +2,7 @@ package net.karolek.store.modes;
 
 
 import net.karolek.store.Store;
-import net.karolek.store.runner.TaskProvider;
+import net.karolek.store.common.TaskProvider;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;

@@ -1,8 +1,8 @@
 package net.karolek.store;
 
-import net.karolek.store.queries.OrderQuery;
-import net.karolek.store.runner.QueryCallback;
-import net.karolek.store.runner.TaskProvider;
+import net.karolek.store.common.QueryCallback;
+import net.karolek.store.common.TaskProvider;
+import net.karolek.store.queries.interfaces.OrderQuery;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

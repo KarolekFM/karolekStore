@@ -1,6 +1,6 @@
 package net.karolek.store.queries;
 
-import net.karolek.store.queries.columns.StoreColumn;
+import net.karolek.store.columns.StoreColumn;
 
 public interface InsertQuery extends StoreQuery<InsertQuery> {
 

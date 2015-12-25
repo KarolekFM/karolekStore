@@ -1,4 +1,4 @@
-package net.karolek.store.queries.columns;
+package net.karolek.store.columns;
 
 import lombok.Getter;
 import lombok.Setter;

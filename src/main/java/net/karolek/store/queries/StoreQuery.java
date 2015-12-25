@@ -1,7 +1,8 @@
 package net.karolek.store.queries;
 
-import net.karolek.store.queries.tables.StoreTable;
-import net.karolek.store.runner.QueryCallback;
+import net.karolek.store.common.QueryCallback;
+import net.karolek.store.queries.interfaces.ExecuteQuery;
+import net.karolek.store.tables.StoreTable;
 
 public interface StoreQuery<T extends StoreQuery> extends ExecuteQuery {
 
