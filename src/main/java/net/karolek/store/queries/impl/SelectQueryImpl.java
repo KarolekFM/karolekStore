@@ -12,8 +12,13 @@ import net.karolek.store.condition.ConditionBuilder;
 import net.karolek.store.queries.SelectQuery;
 import net.karolek.store.queries.interfaces.ColumnWhereQuery;
 import net.karolek.store.queries.interfaces.QualifedWhereQuery;
+import net.karolek.store.queries.modules.GroupModule;
+import net.karolek.store.queries.modules.LimitModule;
+import net.karolek.store.queries.modules.OrderModule;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 public class SelectQueryImpl extends StoreQueryImpl<SelectQuery> implements SelectQuery {
@@ -23,10 +28,9 @@ public class SelectQueryImpl extends StoreQueryImpl<SelectQuery> implements Sele
     private final SelectQuery instance;
 
     private Set<StoreColumn> columns = new HashSet<>();
-    private Map<StoreColumn, OrderType> orders = new HashMap<>();
-    private StoreColumn groupColumn;
-    private int limit = -1;
-    private int offset = -1;
+    private GroupModule groupModule = new GroupModule();
+    private OrderModule orderModule = new OrderModule();
+    private LimitModule limitModule = new LimitModule();
     private String whereCondition = "";
     private Set<Condition> conditions = new LinkedHashSet<>();
     private Condition currentConditon;
@@ -57,49 +61,49 @@ public class SelectQueryImpl extends StoreQueryImpl<SelectQuery> implements Sele
 
     @Override
     public SelectQuery group(StoreColumn column) {
-        this.groupColumn = column;
+        groupModule.setGroupColumn(column);
         return this;
     }
 
     @Override
     public SelectQuery group(String column) {
-        this.groupColumn = new StoreColumnImpl(column);
+        groupModule.setGroupColumn(new StoreColumnImpl(column));
         return this;
     }
 
     @Override
     public SelectQuery group(String tablePrefix, String column) {
-        this.groupColumn = new StoreColumnImpl(column, tablePrefix);
+        groupModule.setGroupColumn(new StoreColumnImpl(column, tablePrefix));
         return this;
     }
 
     @Override
     public SelectQuery limit(int limit) {
-        this.limit = limit;
+        limitModule.setLimit(limit);
         return this;
     }
 
     @Override
     public SelectQuery offset(int offset) {
-        this.offset = offset;
+        limitModule.setOffset(offset);
         return this;
     }
 
     @Override
     public SelectQuery order(StoreColumn column, OrderType orderType) {
-        this.orders.put(column, orderType);
+        orderModule.order(column, orderType);
         return this;
     }
 
     @Override
     public SelectQuery order(String column, OrderType orderType) {
-        this.orders.put(new StoreColumnImpl(column), orderType);
+        orderModule.order(new StoreColumnImpl(column), orderType);
         return this;
     }
 
     @Override
     public SelectQuery order(String tablePrefix, String column, OrderType orderType) {
-        this.orders.put(new StoreColumnImpl(column, tablePrefix), orderType);
+        orderModule.order(new StoreColumnImpl(column, tablePrefix), orderType);
         return this;
     }
 
@@ -126,26 +130,9 @@ public class SelectQueryImpl extends StoreQueryImpl<SelectQuery> implements Sele
         if (!whereCondition.equalsIgnoreCase(""))
             sb.append(" WHERE ").append(whereCondition);
 
-        if (groupColumn != null)
-            sb.append(" GROUP BY ").append(groupColumn.getString());
-
-        if (orders.size() > 0) {
-            sb.append(" ORDER BY ");
-            boolean first = true;
-            for (Map.Entry<StoreColumn, OrderType> e : orders.entrySet()) {
-                if (!first) sb.append(", ");
-                sb.append(e.getKey().getString()).append(" ").append(e.getValue().name());
-                first = false;
-            }
-        }
-
-        if (limit > 0) {
-            sb.append(" LIMIT ").append(limit);
-            if (offset > 0)
-                sb.append(", ").append(offset);
-        }
-
-        System.out.println(sb.toString());
+        sb.append(groupModule.getQueryPart());
+        sb.append(orderModule.getQueryPart());
+        sb.append(limitModule.getQueryPart());
 
         store.runQuery(new PreparedQuery(sb.toString(), callback, now, QueryExecutor.SELECT));
     }

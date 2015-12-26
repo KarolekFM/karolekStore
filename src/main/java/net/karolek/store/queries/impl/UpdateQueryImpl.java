@@ -11,6 +11,8 @@ import net.karolek.store.condition.ConditionBuilder;
 import net.karolek.store.queries.UpdateQuery;
 import net.karolek.store.queries.interfaces.ColumnWhereQuery;
 import net.karolek.store.queries.interfaces.QualifedWhereQuery;
+import net.karolek.store.queries.modules.LimitModule;
+import net.karolek.store.queries.modules.OrderModule;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -23,8 +25,8 @@ public class UpdateQueryImpl extends StoreQueryImpl<UpdateQuery> implements Upda
     private final UpdateQuery instance;
 
     private Map<StoreColumn, String> sets = new HashMap<>();
-    private Map<StoreColumn, OrderType> orders = new HashMap<>();
-    private int limit = -1;
+    private OrderModule orderModule = new OrderModule();
+    private LimitModule limitModule = new LimitModule();
     private String whereCondition = "";
     private Set<Condition> conditions = new LinkedHashSet<>();
     private Condition currentConditon;
@@ -52,22 +54,9 @@ public class UpdateQueryImpl extends StoreQueryImpl<UpdateQuery> implements Upda
             sb.append(" WHERE ").append(whereCondition);
 
 
-        if (orders.size() > 0) {
-            sb.append(" ORDER BY ");
-            first = true;
-            for (Map.Entry<StoreColumn, OrderType> e : orders.entrySet()) {
-                if (!first) sb.append(", ");
-                sb.append(e.getKey().getString()).append(" ").append(e.getValue().name());
-                first = false;
-            }
-        }
-
-        if (limit > 0)
-            sb.append(" LIMIT ").append(limit);
-
-
-        System.out.println(sb.toString());
-
+        sb.append(orderModule.getQueryPart());
+        sb.append(limitModule.getQueryPart());
+        
         store.runQuery(new PreparedQuery(sb.toString(), callback, now, QueryExecutor.UPDATE));
     }
 
@@ -109,7 +98,7 @@ public class UpdateQueryImpl extends StoreQueryImpl<UpdateQuery> implements Upda
 
     @Override
     public UpdateQuery limit(int limit) {
-        this.limit = limit;
+        limitModule.setLimit(limit);
         return this;
     }
 
@@ -120,19 +109,19 @@ public class UpdateQueryImpl extends StoreQueryImpl<UpdateQuery> implements Upda
 
     @Override
     public UpdateQuery order(StoreColumn column, OrderType orderType) {
-        this.orders.put(column, orderType);
+        orderModule.order(column, orderType);
         return this;
     }
 
     @Override
     public UpdateQuery order(String column, OrderType orderType) {
-        this.orders.put(new StoreColumnImpl(column), orderType);
+        orderModule.order(new StoreColumnImpl(column), orderType);
         return this;
     }
 
     @Override
     public UpdateQuery order(String tablePrefix, String column, OrderType orderType) {
-        this.orders.put(new StoreColumnImpl(column, tablePrefix), orderType);
+        orderModule.order(new StoreColumnImpl(column, tablePrefix), orderType);
         return this;
     }
 

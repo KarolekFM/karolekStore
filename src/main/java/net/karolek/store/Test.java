@@ -41,15 +41,16 @@ public class Test {
             }
         }, "s1.speedhost.pl:3306", "sid1947_karolek", "sid1947_karolek", "PHPTy3jj");
 
+
         Queries.select()
-                .table("t", "tabela")
-                .column("t", "id")
-                .column("t", "wartosc")
+                .table("tabela")
+                .column("id")
+                .column("wartosc")
                 .where()
-                .column("t", "id").greaterThan(2)
-                .column("t", "id").lessOrEqualsThan(10)
+                .column("id").greaterThan(2)
+                .column("id").lessOrEqualsThan(10)
                 .query()
-                .limit(3)
+                .limit(5)
                 .offset(2)
                 .callback(new QueryCallback() {
                     @Override
@@ -64,8 +65,29 @@ public class Test {
                         throwable.printStackTrace();
                     }
                 })
-                .order("t", "id", OrderQuery.OrderType.ASC)
+                .order("id", OrderQuery.OrderType.ASC)
                 .execute(store);
+
+        Queries.insert()
+                .table("tabela")
+                .add("wartosc", "czesc!")
+                .execute(store);
+
+        Queries.update()
+                .table("tabela")
+                .set("wartosc", "update!")
+                .where()
+                .column("id").equals(4)
+                .query()
+                .execute(store);
+
+        Queries.delete()
+                .table("tabela")
+                .where()
+                .column("wartosc").like("update!")
+                .query()
+                .execute(store);
+
 
     }
 

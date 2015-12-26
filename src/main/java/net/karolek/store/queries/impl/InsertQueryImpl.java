@@ -81,8 +81,6 @@ public class InsertQueryImpl extends StoreQueryImpl<InsertQuery> implements Inse
         }
         sb.append(")");
 
-        System.out.println(sb.toString());
-
         store.runQuery(new PreparedQuery(sb.toString(), callback, now, QueryExecutor.UPDATE));
 
     }
