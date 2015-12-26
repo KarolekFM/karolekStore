@@ -1,13 +1,7 @@
 package net.karolek.store;
 
-import net.karolek.store.queries.DeleteQuery;
-import net.karolek.store.queries.InsertQuery;
-import net.karolek.store.queries.SelectQuery;
-import net.karolek.store.queries.UpdateQuery;
-import net.karolek.store.queries.impl.DeleteQueryImpl;
-import net.karolek.store.queries.impl.InsertQueryImpl;
-import net.karolek.store.queries.impl.SelectQueryImpl;
-import net.karolek.store.queries.impl.UpdateQueryImpl;
+import net.karolek.store.queries.*;
+import net.karolek.store.queries.impl.*;
 
 public class Queries {
 
@@ -25,6 +19,10 @@ public class Queries {
 
     public static DeleteQuery delete() {
         return new DeleteQueryImpl();
+    }
+
+    public static CustomQuery customQuery() {
+        return new CustomQueryImpl();
     }
 
 }

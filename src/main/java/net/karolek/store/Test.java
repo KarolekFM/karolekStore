@@ -88,6 +88,20 @@ public class Test {
                 .query()
                 .execute(store);
 
+        Queries.customQuery().query("SELECT * FROM tabela").callback(new QueryCallback() {
+            @Override
+            public void done(ResultSet resultSet) throws SQLException {
+                while (resultSet.next()) {
+                    System.out.println(resultSet.getInt("id") + " -> " + resultSet.getString("wartosc"));
+                }
+            }
+
+            @Override
+            public void error(Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }).execute(store);
+
 
     }
 
