@@ -7,17 +7,15 @@ import net.karolek.store.columns.StoreColumn;
 import net.karolek.store.columns.StoreColumnImpl;
 import net.karolek.store.common.PreparedQuery;
 import net.karolek.store.common.runner.QueryExecutor;
-import net.karolek.store.condition.Condition;
-import net.karolek.store.condition.ConditionBuilder;
 import net.karolek.store.queries.SelectQuery;
 import net.karolek.store.queries.interfaces.ColumnWhereQuery;
 import net.karolek.store.queries.interfaces.QualifedWhereQuery;
 import net.karolek.store.queries.modules.GroupModule;
 import net.karolek.store.queries.modules.LimitModule;
 import net.karolek.store.queries.modules.OrderModule;
+import net.karolek.store.queries.modules.WhereModule;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Getter
@@ -31,10 +29,7 @@ public class SelectQueryImpl extends StoreQueryImpl<SelectQuery> implements Sele
     private GroupModule groupModule = new GroupModule();
     private OrderModule orderModule = new OrderModule();
     private LimitModule limitModule = new LimitModule();
-    private String whereCondition = "";
-    private Set<Condition> conditions = new LinkedHashSet<>();
-    private Condition currentConditon;
-    private ConditionBuilder conditionBuilder = new ConditionBuilder();
+    private WhereModule whereModule = new WhereModule();
 
 
     public SelectQueryImpl() {
@@ -127,9 +122,7 @@ public class SelectQueryImpl extends StoreQueryImpl<SelectQuery> implements Sele
 
         sb.append(" FROM ").append(getTable().getString());
 
-        if (!whereCondition.equalsIgnoreCase(""))
-            sb.append(" WHERE ").append(whereCondition);
-
+        sb.append(whereModule.getQueryPart());
         sb.append(groupModule.getQueryPart());
         sb.append(orderModule.getQueryPart());
         sb.append(limitModule.getQueryPart());
@@ -143,122 +136,86 @@ public class SelectQueryImpl extends StoreQueryImpl<SelectQuery> implements Sele
 
             @Override
             public ColumnWhereQuery<SelectQuery> column(String string) {
-                if (conditionBuilder != null && conditions.size() == 0)
-                    conditionBuilder = new ConditionBuilder();
-
-                currentConditon = new Condition();
-                currentConditon.setColumn(new StoreColumnImpl(string).getString());
-                if (currentConditon != null)
-                    conditions.add(currentConditon);
-
+                whereModule.setColumn(new StoreColumnImpl(string));
                 return columnWhereQuery;
             }
 
             @Override
             public ColumnWhereQuery<SelectQuery> column(String tablePrefix, String string) {
-                if (currentConditon != null)
-                    conditions.add(currentConditon);
-                currentConditon = new Condition();
-                currentConditon.setColumn(new StoreColumnImpl(string, tablePrefix).getString());
+                whereModule.setColumn(new StoreColumnImpl(string, tablePrefix));
                 return columnWhereQuery;
             }
 
             @Override
             public ColumnWhereQuery<SelectQuery> column(StoreColumn column) {
-                if (currentConditon != null)
-                    conditions.add(currentConditon);
-                currentConditon = new Condition();
-                currentConditon.setColumn(column.getString());
+                whereModule.setColumn(column);
                 return columnWhereQuery;
             }
 
             @Override
             public SelectQuery query() {
-                ConditionBuilder cb = new ConditionBuilder();
-                conditions.forEach(cb::comma);
-                whereCondition += cb.getString();
-                conditions.clear();
+                whereModule.finalize();
                 return getInstance();
             }
 
             ColumnWhereQuery<SelectQuery> columnWhereQuery = new ColumnWhereQuery<SelectQuery>() {
                 @Override
                 public QualifedWhereQuery<SelectQuery> equals(String string) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(string);
-                    currentConditon.setConditionType(Condition.ConditionType.EQUALS);
+                    whereModule.equals(string);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<SelectQuery> notEquals(String string) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(string);
-                    currentConditon.setConditionType(Condition.ConditionType.NOT_EQUALS);
+                    whereModule.notEquals(string);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<SelectQuery> equals(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.EQUALS);
+                    whereModule.equals(String.valueOf(value));
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<SelectQuery> notEquals(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.NOT_EQUALS);
+                    whereModule.notEquals(String.valueOf(value));
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<SelectQuery> like(String string) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(string);
-                    currentConditon.setConditionType(Condition.ConditionType.LIKE);
+                    whereModule.like(string);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<SelectQuery> notLike(String string) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(string);
-                    currentConditon.setConditionType(Condition.ConditionType.NOT_LIKE);
+                    whereModule.notLike(string);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<SelectQuery> greaterThan(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.GREATER_THAN);
+                    whereModule.greaterThan(value);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<SelectQuery> greaterOrEqualsThan(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.GREATER_OR_EQUALS_THAN);
+                    whereModule.greaterOrEqualsThan(value);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<SelectQuery> lessThan(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.LESS_THAN);
+                    whereModule.lessThan(value);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<SelectQuery> lessOrEqualsThan(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.LESS_OR_EQUALS_THAN);
+                    whereModule.lessOrEqualsThan(value);
                     return where();
                 }
             };

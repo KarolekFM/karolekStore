@@ -6,16 +6,12 @@ import net.karolek.store.columns.StoreColumn;
 import net.karolek.store.columns.StoreColumnImpl;
 import net.karolek.store.common.PreparedQuery;
 import net.karolek.store.common.runner.QueryExecutor;
-import net.karolek.store.condition.Condition;
-import net.karolek.store.condition.ConditionBuilder;
 import net.karolek.store.queries.DeleteQuery;
 import net.karolek.store.queries.interfaces.ColumnWhereQuery;
 import net.karolek.store.queries.interfaces.QualifedWhereQuery;
 import net.karolek.store.queries.modules.LimitModule;
 import net.karolek.store.queries.modules.OrderModule;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
+import net.karolek.store.queries.modules.WhereModule;
 
 @Getter
 public class DeleteQueryImpl extends StoreQueryImpl<DeleteQuery> implements DeleteQuery {
@@ -24,10 +20,7 @@ public class DeleteQueryImpl extends StoreQueryImpl<DeleteQuery> implements Dele
 
     private OrderModule orderModule = new OrderModule();
     private LimitModule limitModule = new LimitModule();
-    private String whereCondition = "";
-    private Set<Condition> conditions = new LinkedHashSet<>();
-    private Condition currentConditon;
-    private ConditionBuilder conditionBuilder = new ConditionBuilder();
+    private WhereModule whereModule = new WhereModule();
 
     public DeleteQueryImpl() {
         this.instance = this;
@@ -69,9 +62,7 @@ public class DeleteQueryImpl extends StoreQueryImpl<DeleteQuery> implements Dele
 
         sb.append("DELETE FROM ").append(getTable().getString());
 
-        if (!whereCondition.equalsIgnoreCase(""))
-            sb.append(" WHERE ").append(whereCondition);
-
+        sb.append(whereModule.getQueryPart());
         sb.append(orderModule.getQueryPart());
         sb.append(limitModule.getQueryPart());
 
@@ -84,122 +75,86 @@ public class DeleteQueryImpl extends StoreQueryImpl<DeleteQuery> implements Dele
 
             @Override
             public ColumnWhereQuery<DeleteQuery> column(String string) {
-                if (conditionBuilder != null && conditions.size() == 0)
-                    conditionBuilder = new ConditionBuilder();
-
-                currentConditon = new Condition();
-                currentConditon.setColumn(new StoreColumnImpl(string).getString());
-                if (currentConditon != null)
-                    conditions.add(currentConditon);
-
+                whereModule.setColumn(new StoreColumnImpl(string));
                 return columnWhereQuery;
             }
 
             @Override
             public ColumnWhereQuery<DeleteQuery> column(String tablePrefix, String string) {
-                if (currentConditon != null)
-                    conditions.add(currentConditon);
-                currentConditon = new Condition();
-                currentConditon.setColumn(new StoreColumnImpl(string, tablePrefix).getString());
+                whereModule.setColumn(new StoreColumnImpl(string, tablePrefix));
                 return columnWhereQuery;
             }
 
             @Override
             public ColumnWhereQuery<DeleteQuery> column(StoreColumn column) {
-                if (currentConditon != null)
-                    conditions.add(currentConditon);
-                currentConditon = new Condition();
-                currentConditon.setColumn(column.getString());
+                whereModule.setColumn(column);
                 return columnWhereQuery;
             }
 
             @Override
             public DeleteQuery query() {
-                ConditionBuilder cb = new ConditionBuilder();
-                conditions.forEach(cb::comma);
-                whereCondition += cb.getString();
-                conditions.clear();
+                whereModule.finalize();
                 return getInstance();
             }
 
             ColumnWhereQuery<DeleteQuery> columnWhereQuery = new ColumnWhereQuery<DeleteQuery>() {
                 @Override
                 public QualifedWhereQuery<DeleteQuery> equals(String string) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(string);
-                    currentConditon.setConditionType(Condition.ConditionType.EQUALS);
+                    whereModule.equals(string);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<DeleteQuery> notEquals(String string) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(string);
-                    currentConditon.setConditionType(Condition.ConditionType.NOT_EQUALS);
+                    whereModule.notEquals(string);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<DeleteQuery> equals(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.EQUALS);
+                    whereModule.equals(String.valueOf(value));
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<DeleteQuery> notEquals(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.NOT_EQUALS);
+                    whereModule.notEquals(String.valueOf(value));
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<DeleteQuery> like(String string) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(string);
-                    currentConditon.setConditionType(Condition.ConditionType.LIKE);
+                    whereModule.like(string);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<DeleteQuery> notLike(String string) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(string);
-                    currentConditon.setConditionType(Condition.ConditionType.NOT_LIKE);
+                    whereModule.notLike(string);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<DeleteQuery> greaterThan(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.GREATER_THAN);
+                    whereModule.greaterThan(value);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<DeleteQuery> greaterOrEqualsThan(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.GREATER_OR_EQUALS_THAN);
+                    whereModule.greaterOrEqualsThan(value);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<DeleteQuery> lessThan(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.LESS_THAN);
+                    whereModule.lessThan(value);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<DeleteQuery> lessOrEqualsThan(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.LESS_OR_EQUALS_THAN);
+                    whereModule.lessOrEqualsThan(value);
                     return where();
                 }
             };

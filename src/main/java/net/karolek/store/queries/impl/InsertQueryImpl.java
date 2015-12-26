@@ -63,7 +63,7 @@ public class InsertQueryImpl extends StoreQueryImpl<InsertQuery> implements Inse
         if (getTable() == null) throw new IllegalArgumentException();
         StringBuilder sb = new StringBuilder();
 
-        sb.append("INSERT INTO ").append(getTable()).append(" (");
+        sb.append("INSERT INTO ").append(getTable().getString()).append(" (");
 
         boolean first = true;
         for (StoreColumn c : adds.keySet()) {

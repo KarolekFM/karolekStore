@@ -6,18 +6,15 @@ import net.karolek.store.columns.StoreColumn;
 import net.karolek.store.columns.StoreColumnImpl;
 import net.karolek.store.common.PreparedQuery;
 import net.karolek.store.common.runner.QueryExecutor;
-import net.karolek.store.condition.Condition;
-import net.karolek.store.condition.ConditionBuilder;
 import net.karolek.store.queries.UpdateQuery;
 import net.karolek.store.queries.interfaces.ColumnWhereQuery;
 import net.karolek.store.queries.interfaces.QualifedWhereQuery;
 import net.karolek.store.queries.modules.LimitModule;
 import net.karolek.store.queries.modules.OrderModule;
+import net.karolek.store.queries.modules.WhereModule;
 
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
 @Getter
 public class UpdateQueryImpl extends StoreQueryImpl<UpdateQuery> implements UpdateQuery {
@@ -27,10 +24,7 @@ public class UpdateQueryImpl extends StoreQueryImpl<UpdateQuery> implements Upda
     private Map<StoreColumn, String> sets = new HashMap<>();
     private OrderModule orderModule = new OrderModule();
     private LimitModule limitModule = new LimitModule();
-    private String whereCondition = "";
-    private Set<Condition> conditions = new LinkedHashSet<>();
-    private Condition currentConditon;
-    private ConditionBuilder conditionBuilder = new ConditionBuilder();
+    private WhereModule whereModule = new WhereModule();
 
     public UpdateQueryImpl() {
         this.instance = this;
@@ -50,10 +44,7 @@ public class UpdateQueryImpl extends StoreQueryImpl<UpdateQuery> implements Upda
             first = false;
         }
 
-        if (!whereCondition.equalsIgnoreCase(""))
-            sb.append(" WHERE ").append(whereCondition);
-
-
+        sb.append(whereModule.getQueryPart());
         sb.append(orderModule.getQueryPart());
         sb.append(limitModule.getQueryPart());
         
@@ -131,122 +122,86 @@ public class UpdateQueryImpl extends StoreQueryImpl<UpdateQuery> implements Upda
 
             @Override
             public ColumnWhereQuery<UpdateQuery> column(String string) {
-                if (conditionBuilder != null && conditions.size() == 0)
-                    conditionBuilder = new ConditionBuilder();
-
-                currentConditon = new Condition();
-                currentConditon.setColumn(new StoreColumnImpl(string).getString());
-                if (currentConditon != null)
-                    conditions.add(currentConditon);
-
+                whereModule.setColumn(new StoreColumnImpl(string));
                 return columnWhereQuery;
             }
 
             @Override
             public ColumnWhereQuery<UpdateQuery> column(String tablePrefix, String string) {
-                if (currentConditon != null)
-                    conditions.add(currentConditon);
-                currentConditon = new Condition();
-                currentConditon.setColumn(new StoreColumnImpl(string, tablePrefix).getString());
+                whereModule.setColumn(new StoreColumnImpl(string, tablePrefix));
                 return columnWhereQuery;
             }
 
             @Override
             public ColumnWhereQuery<UpdateQuery> column(StoreColumn column) {
-                if (currentConditon != null)
-                    conditions.add(currentConditon);
-                currentConditon = new Condition();
-                currentConditon.setColumn(column.getString());
+                whereModule.setColumn(column);
                 return columnWhereQuery;
             }
 
             @Override
             public UpdateQuery query() {
-                ConditionBuilder cb = new ConditionBuilder();
-                conditions.forEach(cb::comma);
-                whereCondition += cb.getString();
-                conditions.clear();
+                whereModule.finalize();
                 return getInstance();
             }
 
             ColumnWhereQuery<UpdateQuery> columnWhereQuery = new ColumnWhereQuery<UpdateQuery>() {
                 @Override
                 public QualifedWhereQuery<UpdateQuery> equals(String string) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(string);
-                    currentConditon.setConditionType(Condition.ConditionType.EQUALS);
+                    whereModule.equals(string);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<UpdateQuery> notEquals(String string) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(string);
-                    currentConditon.setConditionType(Condition.ConditionType.NOT_EQUALS);
+                    whereModule.notEquals(string);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<UpdateQuery> equals(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.EQUALS);
+                    whereModule.equals(String.valueOf(value));
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<UpdateQuery> notEquals(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.NOT_EQUALS);
+                    whereModule.notEquals(String.valueOf(value));
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<UpdateQuery> like(String string) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(string);
-                    currentConditon.setConditionType(Condition.ConditionType.LIKE);
+                    whereModule.like(string);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<UpdateQuery> notLike(String string) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(string);
-                    currentConditon.setConditionType(Condition.ConditionType.NOT_LIKE);
+                    whereModule.notLike(string);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<UpdateQuery> greaterThan(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.GREATER_THAN);
+                    whereModule.greaterThan(value);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<UpdateQuery> greaterOrEqualsThan(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.GREATER_OR_EQUALS_THAN);
+                    whereModule.greaterOrEqualsThan(value);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<UpdateQuery> lessThan(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.LESS_THAN);
+                    whereModule.lessThan(value);
                     return where();
                 }
 
                 @Override
                 public QualifedWhereQuery<UpdateQuery> lessOrEqualsThan(int value) {
-                    if (currentConditon == null) throw new IllegalArgumentException();
-                    currentConditon.setValue(String.valueOf(value));
-                    currentConditon.setConditionType(Condition.ConditionType.LESS_OR_EQUALS_THAN);
+                    whereModule.lessOrEqualsThan(value);
                     return where();
                 }
             };

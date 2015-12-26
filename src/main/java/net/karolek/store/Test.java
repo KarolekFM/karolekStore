@@ -41,6 +41,7 @@ public class Test {
             }
         }, "s1.speedhost.pl:3306", "sid1947_karolek", "sid1947_karolek", "PHPTy3jj");
 
+        store.setDebug(true);
 
         Queries.select()
                 .table("tabela")
@@ -48,7 +49,6 @@ public class Test {
                 .column("wartosc")
                 .where()
                 .column("id").greaterThan(2)
-                .column("id").lessOrEqualsThan(10)
                 .query()
                 .limit(5)
                 .offset(2)
