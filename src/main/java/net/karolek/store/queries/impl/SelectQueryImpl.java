@@ -10,10 +10,9 @@ import net.karolek.store.common.runner.QueryExecutor;
 import net.karolek.store.queries.SelectQuery;
 import net.karolek.store.queries.interfaces.ColumnWhereQuery;
 import net.karolek.store.queries.interfaces.QualifedWhereQuery;
-import net.karolek.store.queries.modules.GroupModule;
-import net.karolek.store.queries.modules.LimitModule;
-import net.karolek.store.queries.modules.OrderModule;
-import net.karolek.store.queries.modules.WhereModule;
+import net.karolek.store.queries.modules.*;
+import net.karolek.store.tables.StoreTable;
+import net.karolek.store.tables.StoreTableImpl;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +25,7 @@ public class SelectQueryImpl extends StoreQueryImpl<SelectQuery> implements Sele
     private final SelectQuery instance;
 
     private Set<StoreColumn> columns = new HashSet<>();
+    private JoinModule joinModule = new JoinModule();
     private GroupModule groupModule = new GroupModule();
     private OrderModule orderModule = new OrderModule();
     private LimitModule limitModule = new LimitModule();
@@ -103,6 +103,18 @@ public class SelectQueryImpl extends StoreQueryImpl<SelectQuery> implements Sele
     }
 
     @Override
+    public SelectQuery join(StoreTable table, StoreColumn left, StoreColumn right, JoinType joinType) {
+        joinModule.join(table, left, right, joinType);
+        return this;
+    }
+
+    @Override
+    public SelectQuery join(String tablePrefix, String tableName, String leftPrefix, String leftName, String rightPrefix, String rightName, JoinType joinType) {
+        joinModule.join(new StoreTableImpl(tableName, tablePrefix), new StoreColumnImpl(leftName, leftPrefix), new StoreColumnImpl(rightName, rightPrefix), joinType);
+        return this;
+    }
+
+    @Override
     public void execute(Store store) {
         if (getTable() == null) throw new IllegalArgumentException();
         StringBuilder sb = new StringBuilder();
@@ -122,6 +134,7 @@ public class SelectQueryImpl extends StoreQueryImpl<SelectQuery> implements Sele
 
         sb.append(" FROM ").append(getTable().getString());
 
+        sb.append(joinModule.getQueryPart());
         sb.append(whereModule.getQueryPart());
         sb.append(groupModule.getQueryPart());
         sb.append(orderModule.getQueryPart());
